@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="js/jquery-3.4.1.min.js"></script>
+    <style>
+        .img-wrapper {
+            width: 100%;
+            height: auto;
+        }
+        
+        .img-wrapper img {
+            max-width: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>图片上传</h1>
+    <form action="" method="post">
+        <input type="file" name="filePath" id="img-input"><br>
+        <input type="button" value="点击上传" id="btn" disabled>
+    </form>
+    <div class="img-wrapper">
+        <img src="" id="image" alt="">
+    </div>
+
+    <script>
+        let filePath;
+        let btn = $("#btn");
+        let image = $("#image");
+        $("input[type='file']").change(function() {
+            var file = this.files[0];
+            if (window.FileReader) {
+                var reader = new FileReader();
+                reader.readAsDataURL(file);
+                //监听文件读取结束后事件    
+                reader.onloadend = function(e) {
+                    // $(".weui_uploader_file").css("background-image", "url(" + e.target.result + ")");
+                    //e.target.result就是最后的路径地址
+                    filePath = e.target.result;
+                    btn.attr('disabled', false);
+                };
+            }
+        });
+        btn.on('click', function() {
+            console.log(filePath);
+            filePath = {
+                filePath: filePath
+            };
+            // console.log(filePath.filePath);
+            $.post('image.php', filePath, function(res, code, xhr) {
+                // console.log(JSON.parse(res));
+                let ret = JSON.parse(res);
+                image.attr("src", "http://qdu17zs.com/" + ret.key);
+                console.log("http://qdu17zs.com/" + ret.key);
+                console.log(code);
+                console.log(xhr.status);
+            })
+        });
+    </script>
+</body>
+
+</html>
