@@ -7,32 +7,112 @@
     <title>Document</title>
     <script src="js/jquery-3.4.1.min.js"></script>
     <style>
-        .img-wrapper {
-            width: 100%;
-            height: auto;
+        #img-wrapper {
+            width: 80%;
+            margin: auto;
+            margin-top: 15px;
         }
         
-        .img-wrapper img {
+        #img-wrapper img {
             max-width: 100%;
+        }
+        .container{
+            width: 50%;
+            margin: 0 auto;
+            border: 1px solid #808080;
+            box-shadow: 0 0 10px #808080;
+        }
+        .tab{
+            width: 80%;
+            margin: 20px auto;
+            height: 30px;
+            line-height: 30px;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid gray;
+        }
+        .tab div{
+            width: 50%;
+            display: inline-block;
+            text-align: center;
+            cursor: pointer;
+        }
+        #upload-file{
+            display: none;
+            text-align: center;
+        }
+        .actived{
+            background-color: cornflowerblue;
+            color: white;
+        }
+        #upload-img {
+            text-align: center;
+        }
+        @media screen and (max-width: 768px){
+            .container{
+                width: 90%;
+                margin: 0 auto;
+            }
         }
     </style>
 </head>
 
 <body>
-    <h1>图片上传</h1>
-    <form action="" method="post">
-        <input type="file" name="filePath" id="img-input"><br>
-        <input type="button" value="点击上传" id="btn" disabled>
-    </form>
-    <div class="img-wrapper">
-        <img src="" id="image" alt="">
+<div class="container">
+    <div class="tab">
+        <div id="tab1" class="actived">图片上传</div><!--
+        --><div id="tab2">文件上传</div>
     </div>
+    <div class="wrapper">
+        <div id="upload-file">
+            <h1>文件上传</h1>
+            <form action="" method="post">
+                <input type="file" name="filePath" id="file-input">
+                <input type="button" value="点击上传" id="file-btn" disabled>
+            </form>
+            <div id="file-wrapper">
+                <a id="file-download">下载文件</a>
+            </div>
+        </div>
+        <div id="upload-img">
+            <h1>图片上传</h1>
+            <form action="" method="post">
+                <input type="file" name="filePath" id="img-input">
+                <input type="button" value="点击上传" id="btn" disabled>
+            </form>
+            <div id="img-wrapper">
+                <img src="" id="image" alt="">
+            </div>
+        </div>
+    </div>
+</div>
 
     <script>
-        let filePath;
+        $('#tab1').click(function () {
+            $('#upload-img').show()
+            $('#upload-file').hide()
+            $('#tab1').addClass('actived')
+            $('#tab2').removeClass('actived')
+        })
+        $('#tab2').click(function () {
+            $('#upload-img').hide()
+            $('#upload-file').show()
+            $('#tab2').addClass('actived')
+            $('#tab1').removeClass('actived')
+        })
+
+
+        let filePath;       //图片地址
+        let realFilePath;   //文件地址
         let btn = $("#btn");
         let image = $("#image");
-        $("input[type='file']").change(function() {
+        let fileBtn = $('#file-btn')
+        let fileDownload = $('#file-download')
+        $.get('GetImg.php', function(res, code, xhr) {
+            let ret = JSON.parse(res);
+            image.attr("src", ret.imgUrl);
+        })
+        $("#img-input").change(function() {
             var file = this.files[0];
             if (window.FileReader) {
                 var reader = new FileReader();
@@ -47,18 +127,72 @@
             }
         });
         btn.on('click', function() {
-            console.log(filePath);
+            // console.log(filePath);
             filePath = {
                 filePath: filePath
             };
             // console.log(filePath.filePath);
-            $.post('image.php', filePath, function(res, code, xhr) {
+            $.post('ChangeImg.php', filePath, function(res, code, xhr) {
                 // console.log(JSON.parse(res));
                 let ret = JSON.parse(res);
                 image.attr("src", "http://qdu17zs.com/" + ret.key);
-                console.log("http://qdu17zs.com/" + ret.key);
-                console.log(code);
-                console.log(xhr.status);
+                // console.log("http://qdu17zs.com/" + ret.key);
+                // console.log(code);
+                // console.log(xhr.status);
+            })
+        });
+        //文件上传下载逻辑
+        let fileName
+        $.get('GetFile.php', function(res, code, xhr) {
+            let ret = JSON.parse(res);
+
+            fileDownload.attr("href", ret.file_path);
+            fileDownload.attr("download", ret.file_path)
+            let nameIndex = ret.file_path.lastIndexOf('/')
+            fileName = ret.file_path.substring(nameIndex)
+            fileName = fileName.replace('/','')
+            fileDownload.text(fileName)
+        })
+        let extension;  //声明文件后缀名
+        $("#file-input").change(function() {
+            var file = this.files[0];
+
+            //获取文件后缀名
+            // var index = file.name.lastIndexOf('.');
+            // extension = file.name.substring(index)
+            extension = file.name
+
+            if (window.FileReader) {
+                var reader = new FileReader();
+                reader.readAsDataURL(file);
+                //监听文件读取结束后事件
+                reader.onloadend = function(e) {
+                    // $(".weui_uploader_file").css("background-image", "url(" + e.target.result + ")");
+                    //e.target.result就是最后的路径地址
+                    realFilePath = e.target.result;
+                    fileBtn.attr('disabled', false);
+                };
+            }
+        });
+        fileBtn.on('click', function() {
+            // console.log(filePath);
+            filePath = {
+                filePath: realFilePath,
+                extension: extension
+            };
+            // console.log(filePath.filePath);
+            $.post('ChangeFile.php', filePath, function(res, code, xhr) {
+                // console.log(JSON.parse(res));
+                let ret = JSON.parse(res);
+
+                fileDownload.attr("href", "http://qdu17zs.com/" + ret.key);
+                fileDownload.attr("download","http://qdu17zs.com/" + ret.key)
+                fileDownload.text(ret.key)
+
+
+                // console.log("http://qdu17zs.com/" + ret.key);
+                // console.log(code);
+                // console.log(xhr.status);
             })
         });
     </script>

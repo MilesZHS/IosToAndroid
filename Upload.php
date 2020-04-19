@@ -7,7 +7,7 @@ class Upload{
     {
     }
 
-    public function upload($filePath=''){
+    public function upload($filePath='',$extension = ''){
         if ($filePath == ''){
             return new Error('文件不存在');
         }
@@ -27,7 +27,7 @@ class Upload{
 //        $filePath = $data['filePath'];
 
 //上传七牛云后保存的文件名
-        $key = time();
+        $key = $extension;
         $key1 = $key;
 
 //构建UploadManager对象
