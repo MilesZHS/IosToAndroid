@@ -19,15 +19,26 @@ class Upload{
         $auth = new Auth($accessKey,$secretKey);
         $bucket = 'turtle-qdu';
 
+        //自定义上传回复凭证
+	    $expires = 3600;
+	    $returnBody = '{"key":"$(key)","hash":"$(etag)","width":$(imageInfo.width),"height":"$(imageInfo.height)"}';
+	    $policy = array(
+	    	'returnBody'    =>  $returnBody
+	    );
 //生成上传token
-        $token = $auth->uploadToken($bucket);
+//        $token = $auth->uploadToken($bucket,null,$expires,$policy,true);
+	    $token = $auth->uploadToken($bucket);
 //        echo $token;
 
 //文件路径
 //        $filePath = $data['filePath'];
 
 //上传七牛云后保存的文件名
-        $key = $extension;
+	    if ($extension == ''){
+	    	$key = time();
+	    }else{
+		    $key = time().'___'.$extension;
+	    }
         $key1 = $key;
 
 //构建UploadManager对象
@@ -36,8 +47,10 @@ class Upload{
         list($ret,$err) = $uploadMgr->putFile($token,$key,$filePath);
 //        return $key1;
         if ($err !== null){
+//        	var_dump($err);
             return $err;
         }else {
+//        	var_dump($ret);
             return $ret;
         }
     }

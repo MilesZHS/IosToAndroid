@@ -145,13 +145,15 @@
         let fileName
         $.get('GetFile.php', function(res, code, xhr) {
             let ret = JSON.parse(res);
-
+            // console.log(ret.file_path)
             fileDownload.attr("href", ret.file_path);
             fileDownload.attr("download", ret.file_path)
             let nameIndex = ret.file_path.lastIndexOf('/')
             fileName = ret.file_path.substring(nameIndex)
             fileName = fileName.replace('/','')
-            fileDownload.text(fileName)
+            // console.log(fileName)
+            let arr = fileName.split('___')
+            fileDownload.text(arr[1])
         })
         let extension;  //声明文件后缀名
         $("#file-input").change(function() {
@@ -181,13 +183,15 @@
                 extension: extension
             };
             // console.log(filePath.filePath);
+            // console.log(filePath.extension);
             $.post('ChangeFile.php', filePath, function(res, code, xhr) {
                 // console.log(JSON.parse(res));
                 let ret = JSON.parse(res);
 
                 fileDownload.attr("href", "http://qdu17zs.com/" + ret.key);
                 fileDownload.attr("download","http://qdu17zs.com/" + ret.key)
-                fileDownload.text(ret.key)
+                let arr = ret.key.split('___')
+                fileDownload.text(arr[1])
 
 
                 // console.log("http://qdu17zs.com/" + ret.key);
